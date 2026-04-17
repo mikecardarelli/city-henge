@@ -14,7 +14,7 @@ Google Calendar event template (new tab) prefilled with:
 - **X is latitude-aware:** `~20 / cos(lat)` minutes — the time for the sun to
   drop the last ~5° to the horizon, since `dh/dt ≈ 15°/hr · cos(lat)` near
   sunset. Miami → 22 min, Manhattan → 26, Montreal → 29.
-- **Location:** `{City}, {Country}`
+- **Location:** `{lat},{lng}` — coordinates geocode deterministically to the city center; a place-name string like `"Manhattan, USA"` is ambiguous and Google can fall back to a nearby personal location.
 - **Description:** local sunset time, lead-time explainer, grid offset, target
   azimuth, the existing city note, link back to the cityhenge page.
 
@@ -100,7 +100,7 @@ function gcalUrl(city,hengeDate){
     text:title,
     dates:`${gcalStamp(start)}/${gcalStamp(sunset)}`,
     details,
-    location:`${city.name}, ${city.country}`,
+    location:`${city.lat},${city.lng}`,
     ctz:city.tz
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
