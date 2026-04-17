@@ -31,11 +31,17 @@
   .dates-section { margin-bottom: 12px; }
   .dates-label { font-size: 10px; color: #111; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-family: var(--mono); font-weight: 600; }
   .date-pills { display: flex; gap: 8px; flex-wrap: wrap; }
-  .date-pill { padding: 8px 12px; border: 1px solid #e0e0e0; text-align: center; background: #fafafa; }
+  .date-pill { padding: 8px 12px; border: 1px solid #e0e0e0; text-align: center; background: #fafafa; position: relative; }
   .date-pill.upcoming { border-color: #111; background: #fff; }
+  a.date-pill { text-decoration: none; color: inherit; display: block; cursor: pointer; transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease; }
+  a.date-pill:hover { border-color: var(--orange); background: #fff8ee; transform: translateY(-1px); box-shadow: 0 2px 0 0 var(--orange); }
+  a.date-pill:hover .pill-cta { color: var(--orange); }
+  a.date-pill:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
   .pill-date { font-size: 14px; font-weight: 600; font-family: var(--mono); }
   .pill-days { font-size: 11px; color: #888; margin-top: 2px; font-family: var(--mono); }
   .date-pill.upcoming .pill-days { color: var(--orange); }
+  .pill-cta { font-size: 8px; color: #bbb; margin-top: 3px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.15s ease, opacity 0.15s ease, margin-top 0.15s ease; }
+  a.date-pill:hover .pill-cta, a.date-pill:focus-visible .pill-cta { max-height: 14px; opacity: 1; }
   .expand-row { font-size: 11px; color: #aaa; cursor: pointer; padding-top: 6px; font-family: var(--mono); }
   .expand-row:hover { color: #111; }
   .details { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0; display: none; }
@@ -135,6 +141,69 @@ function findHengeDates(city,year){
 }
 function daysUntil(d){return Math.round((d-TODAY)/86400000);}
 function fmtLong(d){return d.toLocaleDateString('en-US',{month:'long',day:'numeric'});}
+
+// NOAA solar algorithm — returns Date (UTC instant) of sunset for given lat/lng on the given calendar day.
+function sunsetUTC(lat,lng,date){
+  const year=date.getFullYear(),month=date.getMonth(),day=date.getDate();
+  const startUTC=Date.UTC(year,0,1);
+  const dayOfYear=Math.floor((Date.UTC(year,month,day)-startUTC)/86400000)+1;
+  const gamma=2*Math.PI/365*(dayOfYear-1);
+  const decl=0.006918-0.399912*Math.cos(gamma)+0.070257*Math.sin(gamma)
+            -0.006758*Math.cos(2*gamma)+0.000907*Math.sin(2*gamma)
+            -0.002697*Math.cos(3*gamma)+0.00148*Math.sin(3*gamma);
+  const eqtime=229.18*(0.000075+0.001868*Math.cos(gamma)-0.032077*Math.sin(gamma)
+                      -0.014615*Math.cos(2*gamma)-0.040849*Math.sin(2*gamma));
+  const latRad=lat*Math.PI/180;
+  const haCos=(Math.cos(90.833*Math.PI/180)-Math.sin(latRad)*Math.sin(decl))/(Math.cos(latRad)*Math.cos(decl));
+  if(Math.abs(haCos)>1)return null;
+  const haDeg=Math.acos(haCos)*180/Math.PI;
+  const sunsetMin=720-4*lng-eqtime+4*haDeg;
+  return new Date(Date.UTC(year,month,day)+sunsetMin*60000);
+}
+
+// Latitude-aware viewing window: time for the sun to sink the last ~5° of altitude to the horizon.
+// dh/dt at sunset ≈ 15°/hr × cos(lat), so 5° / (15·cos(lat)) hours = 20/cos(lat) minutes.
+function leadMinutes(lat){return Math.round(20/Math.cos(Math.abs(lat)*Math.PI/180));}
+
+function gcalStamp(d){
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getUTCFullYear()}${p(d.getUTCMonth()+1)}${p(d.getUTCDate())}T${p(d.getUTCHours())}${p(d.getUTCMinutes())}00Z`;
+}
+function fmtLocalTime(utcDate,tz){
+  return utcDate.toLocaleTimeString('en-US',{timeZone:tz,hour:'numeric',minute:'2-digit'});
+}
+function gcalUrl(city,hengeDate){
+  const sunset=sunsetUTC(city.lat,city.lng,hengeDate);
+  if(!sunset)return null;
+  const lead=leadMinutes(city.lat);
+  const start=new Date(sunset.getTime()-lead*60000);
+  const sunsetLocal=fmtLocalTime(sunset,city.tz);
+  const tgtCompass=(city.hem==='N'?(city.offsetDir==='CW'?270+city.offset:270-city.offset):(city.offsetDir==='CW'?270-city.offset:270+city.offset)).toFixed(1);
+  const offsetSign=city.offset===0?'':(city.hem==='S'?(city.offsetDir==='CW'?'-':'+'):(city.offsetDir==='CW'?'+':'-'));
+  const title=`${city.henge}: catch the sun lining up with ${city.name}`;
+  const details=[
+    `Sunset in ${city.name}: ${sunsetLocal}`,
+    `Recommended arrival: ${lead} minutes before sunset`,
+    ``,
+    `This event spans the latitude-aware viewing window — from when the sun drops into the "frame" of the grid down to the horizon. At ${Math.abs(city.lat).toFixed(1)}° latitude, that's about ${lead} minutes.`,
+    ``,
+    `Grid offset: ${offsetSign}${city.offset}° from cardinal`,
+    `Target sun azimuth: ${tgtCompass}°`,
+    ``,
+    city.note + '.',
+    ``,
+    `More cityhenges → https://mikecardarelli.github.io/city-henge/`
+  ].join('\n');
+  const params=new URLSearchParams({
+    action:'TEMPLATE',
+    text:title,
+    dates:`${gcalStamp(start)}/${gcalStamp(sunset)}`,
+    details,
+    location:`${city.lat},${city.lng}`,
+    ctz:city.tz
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
 function drawGrid(offset, dir, w, h){
   const angleDeg = dir==='CW' ? offset : -offset;
   const spacing = 22;
@@ -226,9 +295,20 @@ function renderCards(){
       const days=daysUntil(d);
       const up=days>=0;
       const dayStr=days===0?'today':days===1?'tomorrow':`in ${days} days`;
-      return `<div class="date-pill${up?' upcoming':''}">
+      if(up){
+        const url=gcalUrl(city,d);
+        const sunset=sunsetUTC(city.lat,city.lng,d);
+        const sunsetLocal=sunset?fmtLocalTime(sunset,city.tz):'';
+        const tip=sunset?`Add to Google Calendar — sunset ${sunsetLocal} (${leadMinutes(city.lat)} min before)`:'Add to Google Calendar';
+        return `<a href="${url}" target="_blank" rel="noopener" class="date-pill upcoming" title="${tip}" aria-label="${tip}">
+          <div class="pill-date">${fmtLong(d)}</div>
+          <div class="pill-days">${dayStr}</div>
+          <div class="pill-cta">+ Add to cal</div>
+        </a>`;
+      }
+      return `<div class="date-pill">
         <div class="pill-date">${fmtLong(d)}</div>
-        <div class="pill-days">${up?dayStr:'passed'}</div>
+        <div class="pill-days">passed</div>
       </div>`;
     }).join('');
     const gridDir = city.hem==="S" ? (city.offsetDir==="CW"?"CCW":"CW") : city.offsetDir; const gridSvg=drawGrid(city.offset,gridDir,600,180);
