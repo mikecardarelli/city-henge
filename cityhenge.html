@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cityhenge — Sunset alignments with city street grids</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; --orange: #f90; }
+  body { font-family: 'Boldonse', 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111; padding: 2rem 1.5rem; }
+  .page { max-width: 1100px; margin: 0 auto; }
+  .header { margin-bottom: 1.5rem; }
+  .header h1 { font-size: 48px; font-weight: 700; font-family: 'Boldonse', var(--mono); letter-spacing: 0.05em; }
+  .header h1 span { color: #111; }
+  .header p { font-size: 13px; color: #666; margin-top: 4px; font-family: var(--mono); }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; align-items: center; }
+  .filter-btn { padding: 4px 12px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 12px; color: #444; font-family: var(--mono); }
+  .filter-btn.active { background: #111; color: #fff; border-color: #111; }
+  .sort-label { font-size: 12px; color: #888; margin-left: auto; font-family: var(--mono); }
+  select { font-size: 12px; padding: 4px 8px; border: 1px solid #ccc; background: #fff; color: #111; cursor: pointer; font-family: var(--mono); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .card { background: #fff; border: 1px solid #e0e0e0; overflow: hidden; }
+  .map-wrap { height: 180px; overflow: hidden; border-bottom: 1px solid #e0e0e0; }
+  .card-body { padding: 14px 16px; }
+  .city-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .city-meta { flex: 1; min-width: 0; }
+  .city-name { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+  .henge-name { font-size: 11px; color: #888; margin-top: 2px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
+  .right-col { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; margin-left: 12px; }
+  .offset-badge { font-size: 18px; font-weight: 700; font-family: var(--mono); color: #111; white-space: nowrap; }
+  .dates-section { margin-bottom: 12px; }
+  .dates-label { font-size: 10px; color: #111; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-family: var(--mono); font-weight: 600; }
+  .date-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .date-pill { padding: 8px 12px; border: 1px solid #e0e0e0; text-align: center; background: #fafafa; }
+  .date-pill.upcoming { border-color: #111; background: #fff; }
+  .pill-date { font-size: 14px; font-weight: 600; font-family: var(--mono); }
+  .pill-days { font-size: 11px; color: #888; margin-top: 2px; font-family: var(--mono); }
+  .date-pill.upcoming .pill-days { color: var(--orange); }
+  .expand-row { font-size: 11px; color: #aaa; cursor: pointer; padding-top: 6px; font-family: var(--mono); }
+  .expand-row:hover { color: #111; }
+  .details { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0; display: none; }
+  .card.expanded .details { display: block; }
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .stat-label { font-size: 10px; color: #888; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-val { font-size: 13px; font-weight: 600; margin-top: 2px; font-family: var(--mono); }
+  .math-block { font-family: var(--mono); font-size: 11px; color: #444; background: #f7f7f7; padding: 10px 12px; line-height: 2; margin-bottom: 6px; border-left: 2px solid var(--orange); }
+  .math-block span { color: #111; font-weight: 600; }
+  .note-text { font-size: 12px; color: #888; line-height: 1.6; }
+</style>
+<link rel='preconnect' href='https://fonts.googleapis.com'>
+<link href='https://fonts.googleapis.com/css2?family=Nunito:wght@700&family=Boogaloo&family=Boldonse&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>CITY<svg width="50" height="26" viewBox="0 0 50 26" style="display:inline-block;vertical-align:0px;margin:0 12px 0 4px" xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="26" r="26" fill="white"/><g fill="none" stroke="#f90" stroke-width="1.5"><line x1="38.00" y1="26.00" x2="47.00" y2="26.00"/><line x1="37.01" y1="30.97" x2="45.33" y2="34.42"/><line x1="34.19" y1="35.19" x2="40.56" y2="41.56"/><line x1="29.97" y1="38.01" x2="33.42" y2="46.33"/><line x1="25.00" y1="39.00" x2="25.00" y2="48.00"/><line x1="20.03" y1="38.01" x2="16.58" y2="46.33"/><line x1="15.81" y1="35.19" x2="9.44" y2="41.56"/><line x1="12.99" y1="30.97" x2="4.67" y2="34.42"/><line x1="12.00" y1="26.00" x2="3.00" y2="26.00"/><line x1="12.99" y1="21.03" x2="4.67" y2="17.58"/><line x1="15.81" y1="16.81" x2="9.44" y2="10.44"/><line x1="20.03" y1="13.99" x2="16.58" y2="5.67"/><line x1="25.00" y1="13.00" x2="25.00" y2="4.00"/><line x1="29.97" y1="13.99" x2="33.42" y2="5.67"/><line x1="34.19" y1="16.81" x2="40.56" y2="10.44"/><line x1="37.01" y1="21.03" x2="45.33" y2="17.58"/></g><circle cx="25" cy="26" r="11" fill="#f90"/></svg><span>HENGE</span></h1>
+    <p>When the <a href="https://en.wikipedia.org/wiki/Manhattanhenge" style="color:inherit">sun lines up</a> with city street grids around the world</p>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All cities</button>
+    <button class="filter-btn" onclick="setFilter('north',this)">Northern hemisphere</button>
+    <button class="filter-btn" onclick="setFilter('south',this)">Southern hemisphere</button>
+  
+    <span class="sort-label">Sort:</span>
+    <select id="sort-sel" onchange="renderCards()">
+      <option value="next">Next henge date</option>
+      <option value="name">City name</option>
+      <option value="offset">Grid offset</option>
+    </select>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const TODAY = new Date();
+TODAY.setHours(0,0,0,0);
+const THIS_YEAR = TODAY.getFullYear();
+
+const CITIES = [
+  {name:'Manhattan',tz:'America/New_York',henge:'Manhattanhenge',country:'USA',lat:40.7549,lng:-73.9840,hem:'N',offset:29,offsetDir:'CW',note:'29° clockwise from true E–W per the Commissioners\' Plan of 1811',verified2026:[[4,29],[6,12]],verified2027:[[4,29],[6,12]],verified2028:[[4,28],[6,11]]},
+  {name:'Chicago',tz:'America/Chicago',henge:'Chicagohenge',country:'USA',lat:41.8827,lng:-87.6233,hem:'N',offset:0,offsetDir:'CW',note:'Grid aligned with cardinal directions — henge falls on the equinoxes',verified2026:[[2,20],[8,22]],verified2027:[[2,20],[8,22]],verified2028:[[2,19],[8,21]]},
+  {name:'Miami',tz:'America/New_York',henge:'Miamihenge',country:'USA',lat:25.7748,lng:-80.1977,hem:'N',offset:2,offsetDir:'CCW',note:'Downtown grid is ~8° counter-clockwise from cardinal',verified2026:[[2,16],[8,25]],verified2027:[[2,16],[8,25]],verified2028:[[2,15],[8,24]]},
+  {name:'Toronto',tz:'America/Toronto',henge:'Torontohenge',country:'Canada',lat:43.6532,lng:-79.3832,hem:'N',offset:17,offsetDir:'CCW',note:'16° counter-clockwise offset yields henges in February and October',verified2026:[[1,15],[9,25]],verified2027:[[1,15],[9,25]],verified2028:[[1,14],[9,24]]},
+  {name:'Montreal',tz:'America/Toronto',henge:'Montrealhenge',country:'Canada',lat:45.5225,lng:-73.5853,hem:'N',offset:33,offsetDir:'CW',note:'~18° clockwise offset, henge around mid-June',verified2026:[[5,11],[5,29]],verified2027:[[5,11],[5,29]],verified2028:[[5,10],[5,28]]},
+  {name:'Philadelphia',tz:'America/New_York',henge:'Phillyhenge',country:'USA',lat:39.9526,lng:-75.1652,hem:'N',offset:9,offsetDir:'CW',note:'Near-cardinal grid, henge falls close to equinoxes',verified2026:[[3,10],[8,1]],verified2027:[[3,10],[8,1]],verified2028:[[3,9],[7,31]]},
+  
+  {name:'Savannah',tz:'America/New_York',henge:'Savannahhenge',country:'USA',lat:32.0809,lng:-81.0912,hem:'N',offset:17,offsetDir:'CW',note:'Oglethorpe Plan grid aligns with the curve of the Savannah River',verified2026:[[3,19],[7,21]],verified2027:[[3,19],[7,21]],verified2028:[[3,18],[7,20]]},
+  
+  
+  {name:'San Francisco',tz:'America/Los_Angeles',henge:'SF-henge',country:'USA',lat:37.7749,lng:-122.4194,hem:'N',offset:3,offsetDir:'CCW',note:'~6° clockwise offset from cardinal directions',verified2026:[[2,14],[8,27]],verified2027:[[2,14],[8,27]],verified2028:[[2,13],[8,26]]},
+  {name:'Baltimore',tz:'America/New_York',henge:'Baltimorehenge',country:'USA',lat:39.2904,lng:-76.6122,hem:'N',offset:3,offsetDir:'CCW',note:'~5° clockwise offset',verified2026:[[2,14],[8,27]],verified2027:[[2,14],[8,27]],verified2028:[[2,13],[8,26]]},
+  
+  
+
+  {name:'Boston',tz:'America/New_York',henge:'Back Bay-henge',country:'USA',lat:42.3503,lng:-71.0810,hem:'N',offset:20,offsetDir:'CCW',note:'Back Bay grid follows the line of the original Mill Dam, ~20° CCW from true north',verified2026:[[1,10],[9,30]],verified2027:[[1,10],[9,30]],verified2028:[[1,9],[9,29]]},
+  
+  
+  
+  {name:'Melbourne',tz:'Australia/Melbourne',henge:'Melbhenge',country:'Australia',lat:-37.8136,lng:144.9631,hem:'S',offset:20,offsetDir:'CW',note:'CBD grid ~4° offset, henge occurs in early November and early February',verified2026:[[1,6],[10,3]],verified2027:[[1,6],[10,3]],verified2028:[[1,5],[10,2]]},
+  {name:'Buenos Aires',tz:'America/Argentina/Buenos_Aires',henge:'BA-henge',country:'Argentina',lat:-34.6037,lng:-58.3816,hem:'S',offset:5,offsetDir:'CCW',note:'~5° offset from cardinal grid',verified2026:[[2,14],[8,27]],verified2027:[[2,14],[8,27]],verified2028:[[2,13],[8,26]]},
+  
+  
+  
+];
+
+function sunDecl(doy){return 23.45*Math.sin((2*Math.PI*(284+doy)/365))*Math.PI/180;}
+// Returns degrees where 90=due west, >90=north of west, <90=south of west
+function sunsetAzRaw(lat,doy){
+  const phi=lat*Math.PI/180,d=sunDecl(doy),c=-Math.sin(d)/Math.cos(phi);
+  if(Math.abs(c)>1)return null;
+  return Math.acos(c)*180/Math.PI;
+}
+// Target in raw space: 90=due west baseline, CW adds offset, CCW subtracts
+// Southern hemisphere: sun sweeps south of west, so target is 90-offset for CW
+function targetRaw(city){
+  if(city.hem==='N') return city.offsetDir==='CW' ? 90+city.offset : 90-city.offset;
+  else               return city.offsetDir==='CCW' ? 90+city.offset : 90-city.offset;
+}
+function findHengeDates(city,year){
+  const tgt=targetRaw(city),dates=[];
+  let prev=null;
+  for(let d=1;d<=365;d++){
+    const raw=sunsetAzRaw(Math.abs(city.lat),d);
+    if(raw===null){prev=null;continue;}
+    const diff=raw-tgt;
+    if(prev!==null&&prev*diff<0){
+      const frac=Math.abs(prev)/(Math.abs(prev)+Math.abs(diff));
+      const dt=new Date(year,0,1);
+      dt.setDate(dt.getDate()+Math.round(d-1+frac)-1);
+      dates.push(dt);
+    }
+    prev=diff;
+  }
+  return dates;
+}
+function daysUntil(d){return Math.round((d-TODAY)/86400000);}
+function fmtLong(d){return d.toLocaleDateString('en-US',{month:'long',day:'numeric'});}
+function drawGrid(offset, dir, w, h){
+  const angleDeg = dir==='CW' ? offset : -offset;
+  const spacing = 22;
+  const sunX = 30, sunY = h/2;
+  const rad = angleDeg * Math.PI / 180;
+  const cos = Math.cos(rad), sin = Math.sin(rad);
+  const perpCos = Math.cos(rad + Math.PI/2), perpSin = Math.sin(rad + Math.PI/2);
+  const ext = 2000;
+  const uid = 'g'+Math.abs(offset)+dir;
+  const lines = [];
+  // Draw parallel lines (along the sun line direction) at spacing intervals perpendicular to it
+  for(let i=-30;i<=30;i++){
+    const ox = sunX + i*spacing*perpCos;
+    const oy = sunY + i*spacing*perpSin;
+    lines.push(`<line x1="${ox-ext*cos}" y1="${oy-ext*sin}" x2="${ox+ext*cos}" y2="${oy+ext*sin}" stroke="#ddd" stroke-width="1"/>`);
+  }
+  // Draw perpendicular lines (cross streets) at spacing intervals along the sun line
+  for(let i=-30;i<=30;i++){
+    const ox = sunX + i*spacing*cos;
+    const oy = sunY + i*spacing*sin;
+    lines.push(`<line x1="${ox-ext*perpCos}" y1="${oy-ext*perpSin}" x2="${ox+ext*perpCos}" y2="${oy+ext*perpSin}" stroke="#ddd" stroke-width="1"/>`);
+  }
+  const ex = sunX + ext*cos, ey = sunY + ext*sin;
+  const r=10, sr=19, spokes=16;
+  let sunEl='<g>';
+  sunEl+=`<circle cx="${sunX}" cy="${sunY}" r="${sr+4}" fill="#fafafa" stroke="none"/>`;
+  sunEl+='<g fill="none" stroke="#f90" stroke-width="1.5">';
+  for(let i=0;i<spokes;i++){
+    const a=(i/spokes)*Math.PI*2 + rad;
+    sunEl+=`<line x1="${sunX+Math.cos(a)*(r+2)}" y1="${sunY+Math.sin(a)*(r+2)}" x2="${sunX+Math.cos(a)*sr}" y2="${sunY+Math.sin(a)*sr}"/>`;
+  }
+  sunEl+=`</g><circle cx="${sunX}" cy="${sunY}" r="${r}" fill="#f90" stroke="none"/></g>`;
+  return `<svg width="100%" height="${h}" style="display:block;background:#fafafa">`
+    +`<defs><clipPath id="${uid}"><rect width="100%" height="${h}"/></clipPath></defs>`
+    +`<rect width="100%" height="${h}" fill="#fafafa"/>`
+    +`<g clip-path="url(#${uid})">${lines.join('')}</g>`
+    +`<line x1="${sunX-ext*cos}" y1="${sunY-ext*sin}" x2="${ex}" y2="${ey}" stroke="#999" stroke-width="2.5" stroke-dasharray="6,4"/>`
+    +sunEl
+    +'</svg>';
+}
+function sunXInView(w){ return -(w/2)+18; }
+function sunXInView(w){ return -(w/2)+18; }
+
+let currentFilter='all';
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+function renderCards(){
+  const sort=document.getElementById('sort-sel').value;
+  let cities=CITIES.map(city=>{
+    const verifiedKey = 'verified'+THIS_YEAR;
+    const datesThis = city[verifiedKey]
+      ? city[verifiedKey].map(([m,d])=>new Date(THIS_YEAR,m,d))
+      : findHengeDates(city,THIS_YEAR);
+    const nextKey = 'verified'+(THIS_YEAR+1);
+    const datesNext = city[nextKey]
+      ? city[nextKey].map(([m,d])=>new Date(THIS_YEAR+1,m,d))
+      : findHengeDates(city,THIS_YEAR+1);
+    const future=[...datesThis,...datesNext].filter(d=>d>=TODAY);
+    const next=future[0]||null;
+    return{...city,datesThis,next,days:next?daysUntil(next):9999};
+  });
+  if(currentFilter==='north')cities=cities.filter(c=>c.hem==='N');
+  if(currentFilter==='south')cities=cities.filter(c=>c.hem==='S');
+
+  if(sort==='next')cities.sort((a,b)=>a.days-b.days);
+  if(sort==='name')cities.sort((a,b)=>a.name.localeCompare(b.name));
+  if(sort==='offset')cities.sort((a,b)=>b.offset-a.offset);
+
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  cities.forEach(city=>{
+    const tgtCompass=(city.hem==='N'?(city.offsetDir==='CW'?270+city.offset:270-city.offset):(city.offsetDir==='CW'?270-city.offset:270+city.offset)).toFixed(1);
+    const solstice=new Date(THIS_YEAR,city.hem==='N'?5:11,21);
+    const dfsol=city.datesThis[0]?Math.abs(Math.round((city.datesThis[0]-solstice)/86400000)):'—';
+    const pillsHtml=city.datesThis.map(d=>{
+      const days=daysUntil(d);
+      const up=days>=0;
+      const dayStr=days===0?'today':days===1?'tomorrow':`in ${days} days`;
+      return `<div class="date-pill${up?' upcoming':''}">
+        <div class="pill-date">${fmtLong(d)}</div>
+        <div class="pill-days">${up?dayStr:'passed'}</div>
+      </div>`;
+    }).join('');
+    const gridDir = city.hem==="S" ? (city.offsetDir==="CW"?"CCW":"CW") : city.offsetDir; const gridSvg=drawGrid(city.offset,gridDir,600,180);
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML=`
+      <div class="map-wrap">${gridSvg}</div>
+      <div class="card-body">
+        <div class="city-row">
+          <div class="city-meta">
+            <div class="city-name">${city.name}</div>
+            <div class="henge-name">${city.henge} &middot; ${city.country}</div>
+          </div>
+          <div class="right-col">
+            <div style="text-align:right">
+              <span class="offset-badge">${city.offset===0?'':(city.hem==='S'?(city.offsetDir==='CW'?'-':'+'):(city.offsetDir==='CW'?'+':'-'))}${city.offset}&deg;</span>
+              <div style="font-size:10px;color:#888;font-family:var(--mono);margin-top:2px;text-transform:uppercase;letter-spacing:0.06em">grid offset</div>
+            </div>
+          </div>
+        </div>
+        <div class="dates-section">
+          <div class="dates-label">${THIS_YEAR} sunset henge dates</div>
+          <div class="date-pills">${pillsHtml||'<span style="font-size:13px;color:var(--color-text-tertiary)">None calculated</span>'}</div>
+        </div>
+        <div class="expand-row" onclick="toggle(this.closest('.card'))">Show angles + math ↓</div>
+        <div class="details">
+          <div class="stats-row">
+            <div class="stat"><div class="stat-label">Latitude</div><div class="stat-val">${Math.abs(city.lat).toFixed(1)}° ${city.hem}</div></div>
+            <div class="stat"><div class="stat-label">Solstice ref.</div><div class="stat-val">${city.hem==='N'?'Jun 21':'Dec 21'}</div></div>
+            <div class="stat"><div class="stat-label">Target azimuth</div><div class="stat-val">${tgtCompass}°</div></div>
+          </div>
+          <div class="math-block">
+            Target az: <span>270 ${city.offsetDir==='CW'?'+':'-'} ${city.offset}° = ${tgtCompass}°</span><br>
+            Days from solstice: <span>~${dfsol} days</span><br>
+
+          </div>
+
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function toggle(card){
+  card.classList.toggle('expanded');
+  const row=card.querySelector('.expand-row');
+  row.textContent=card.classList.contains('expanded')?'Hide ↑':'Show angles + math ↓';
+}
+
+renderCards();
+</script>
+<footer style="text-align:center;padding:2rem 0 1.5rem;font-size:12px;color:#888;font-family:var(--mono)">Built by <a href="https://mikecardarelli.com/" style="color:#888">Mike C.</a> in NYC. (Last updated April 2026)</footer>
+</body>
+</html>
