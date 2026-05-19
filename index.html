@@ -624,12 +624,23 @@ function updateLiveCountdowns(){
     .filter(h=>h.sunset && h.sunset.getTime()>Date.now())
     .sort((a,b)=>a.sunset-b.sunset)
     .filter(h=>{ if(seen.has(h.city.name)) return false; seen.add(h.city.name); return true; });
+  const originalPrefix=prefix?prefix.textContent:'';
+  const originalTail=tail?tail.textContent:'';
   let idx=0;
   function spin(){
     if(!queue.length) return;
+    if(idx>0 && idx % queue.length===0){
+      // Cycled through all cities — reset to original title
+      sun.style.transform='rotate(0deg)';
+      sun.setAttribute('aria-label','City Henge');
+      if(prefix) prefix.textContent=originalPrefix;
+      if(tail) tail.textContent=originalTail;
+      idx=0;
+      return;
+    }
     const h=queue[idx % queue.length];
     const sign=h.city.offsetDir==='CW'?1:-1;
-    const angle=h.city.offset*sign;
+    const angle=h.city.offset*sign-90;
     sun.style.transform=`rotate(${angle}deg)`;
     sun.setAttribute('aria-label',`Sun aligned with ${h.city.henge} (${h.city.offset}° grid offset)`);
     if(prefix) prefix.textContent=h.city.name.toUpperCase();
