@@ -14,73 +14,154 @@
 
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; --orange: #f90; }
-  body { font-family: 'Boldonse', 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111; padding: 2rem 1.5rem; }
+  :root {
+    --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    --orange: #f90;
+    --color-bg: #fff;
+    --color-text: #111;
+    --color-text-soft: #444;
+    --color-text-muted: #666;
+    --color-text-faint: #888;
+    --color-text-dim: #aaa;
+    --color-text-fainter: #bbb;
+    --color-border: #e0e0e0;
+    --color-border-input: #ccc;
+    --color-card-bg: #fff;
+    --color-pill-bg: #fafafa;
+    --color-math-bg: #f7f7f7;
+    --color-tonight-bg: #fff8ee;
+    --color-svg-sky: #fafafa;
+    --color-svg-grid: #ddd;
+    --color-svg-horizon: #999;
+    --color-invert-bg: #111;
+    --color-invert-text: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-bg: #0b0b0b;
+      --color-text: #ededed;
+      --color-text-soft: #d0d0d0;
+      --color-text-muted: #b0b0b0;
+      --color-text-faint: #9a9a9a;
+      --color-text-dim: #6a6a6a;
+      --color-text-fainter: #5a5a5a;
+      --color-border: #242424;
+      --color-border-input: #2a2a2a;
+      --color-card-bg: #141414;
+      --color-pill-bg: #0e0e0e;
+      --color-math-bg: #161616;
+      --color-tonight-bg: #241a07;
+      --color-svg-sky: #0a0c10;
+      --color-svg-grid: #2a2a2a;
+      --color-svg-horizon: #555;
+      --color-invert-bg: #ededed;
+      --color-invert-text: #0b0b0b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --color-bg: #0b0b0b;
+    --color-text: #ededed;
+    --color-text-soft: #d0d0d0;
+    --color-text-muted: #b0b0b0;
+    --color-text-faint: #9a9a9a;
+    --color-text-dim: #6a6a6a;
+    --color-text-fainter: #5a5a5a;
+    --color-border: #242424;
+    --color-border-input: #2a2a2a;
+    --color-card-bg: #141414;
+    --color-pill-bg: #0e0e0e;
+    --color-math-bg: #161616;
+    --color-tonight-bg: #241a07;
+    --color-svg-sky: #0a0c10;
+    --color-svg-grid: #2a2a2a;
+    --color-svg-horizon: #555;
+    --color-invert-bg: #ededed;
+    --color-invert-text: #0b0b0b;
+  }
+  body { font-family: 'Boldonse', 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--color-bg); color: var(--color-text); padding: 2rem 1.5rem; transition: background-color 0.2s ease, color 0.2s ease; }
   .page { max-width: 1100px; margin: 0 auto; }
-  .header { margin-bottom: 1.5rem; }
+  .header { margin-bottom: 1.5rem; position: relative; padding-right: 44px; }
   .header h1 { font-size: 48px; font-weight: 700; font-family: 'Boldonse', var(--mono); letter-spacing: 0.05em; }
-  .header h1 span { color: #111; }
-  .header p { font-size: 13px; color: #666; margin-top: 4px; font-family: var(--mono); }
+  .header h1 span { color: var(--color-text); }
+  .header p { font-size: 13px; color: var(--color-text-muted); margin-top: 4px; font-family: var(--mono); }
   .wordmark-sun { display: inline-block; vertical-align: 0px; margin: 0 12px 0 4px; cursor: pointer; transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1); transform-origin: 25px 26px; }
   .wordmark-sun:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; border-radius: 50%; }
-  .tonight-line { display: none; font-family: var(--mono); font-size: 13px; color: #111; margin: 14px 0 0; padding: 8px 12px; border: 1px solid var(--orange); background: #fff8ee; }
+  .wordmark-sun-halo { fill: var(--color-bg); transition: fill 0.2s ease; }
+  .theme-toggle { position: absolute; top: 6px; right: 0; width: 28px; height: 28px; background: transparent; border: 1px solid var(--color-border); color: var(--color-text); border-radius: 50%; padding: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+  .theme-toggle:hover { border-color: var(--orange); color: var(--orange); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  .theme-toggle svg { width: 14px; height: 14px; display: block; }
+  .tonight-line { display: none; font-family: var(--mono); font-size: 13px; color: var(--color-text); margin: 14px 0 0; padding: 8px 12px; border: 1px solid var(--orange); background: var(--color-tonight-bg); transition: background-color 0.2s ease, color 0.2s ease; }
   .tonight-line.visible { display: block; }
   .tonight-line strong { color: var(--orange); font-weight: 700; letter-spacing: 0.04em; }
-  .tonight-city { color: #111; cursor: pointer; text-decoration: underline; text-decoration-color: rgba(255,153,0,0.4); text-underline-offset: 3px; }
+  .tonight-city { color: var(--color-text); cursor: pointer; text-decoration: underline; text-decoration-color: rgba(255,153,0,0.4); text-underline-offset: 3px; }
   .tonight-city:hover { text-decoration-color: var(--orange); }
   .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; align-items: center; }
-  .filter-btn { padding: 4px 12px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 12px; color: #444; font-family: var(--mono); }
-  .filter-btn.active { background: #111; color: #fff; border-color: #111; }
-  .sort-label { font-size: 12px; color: #888; margin-left: auto; font-family: var(--mono); }
-  select { font-size: 12px; padding: 4px 8px; border: 1px solid #ccc; background: #fff; color: #111; cursor: pointer; font-family: var(--mono); }
+  .filter-btn { padding: 4px 12px; border: 1px solid var(--color-border-input); background: var(--color-card-bg); cursor: pointer; font-size: 12px; color: var(--color-text-soft); font-family: var(--mono); transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+  .filter-btn.active { background: var(--color-invert-bg); color: var(--color-invert-text); border-color: var(--color-invert-bg); }
+  .sort-label { font-size: 12px; color: var(--color-text-faint); margin-left: auto; font-family: var(--mono); }
+  select { font-size: 12px; padding: 4px 8px; border: 1px solid var(--color-border-input); background: var(--color-card-bg); color: var(--color-text); cursor: pointer; font-family: var(--mono); transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-  .card { background: #fff; border: 1px solid #e0e0e0; overflow: hidden; }
-  .map-wrap { height: 180px; overflow: hidden; border-bottom: 1px solid #e0e0e0; }
+  .card { background: var(--color-card-bg); border: 1px solid var(--color-border); overflow: hidden; transition: background-color 0.2s ease, border-color 0.2s ease; }
+  .map-wrap { height: 180px; overflow: hidden; border-bottom: 1px solid var(--color-border); }
+  .grid-svg { background: var(--color-svg-sky); }
+  .grid-bg { fill: var(--color-svg-sky); }
+  .grid-line { stroke: var(--color-svg-grid); }
+  .grid-horizon { stroke: var(--color-svg-horizon); }
+  .grid-sun-halo { fill: var(--color-svg-sky); }
   .card-body { padding: 14px 16px; }
   .city-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
   .city-meta { flex: 1; min-width: 0; }
   .city-name { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
-  .henge-name { font-size: 11px; color: #888; margin-top: 2px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
+  .henge-name { font-size: 11px; color: var(--color-text-faint); margin-top: 2px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
   .right-col { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; margin-left: 12px; }
-  .offset-badge { font-size: 18px; font-weight: 700; font-family: var(--mono); color: #111; white-space: nowrap; }
+  .offset-badge { font-size: 18px; font-weight: 700; font-family: var(--mono); color: var(--color-text); white-space: nowrap; }
   .dates-section { margin-bottom: 12px; }
-  .dates-label { font-size: 10px; color: #111; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-family: var(--mono); font-weight: 600; }
+  .dates-label { font-size: 10px; color: var(--color-text); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-family: var(--mono); font-weight: 600; }
   .date-pills { display: flex; gap: 8px; flex-wrap: wrap; }
-  .date-pill { padding: 8px 12px; border: 1px solid #e0e0e0; text-align: center; background: #fafafa; position: relative; }
-  .date-pill.upcoming { border-color: #111; background: #fff; }
-  .date-pill.tonight { border-color: var(--orange); background: #fff8ee; animation: tonight-breath 2.6s ease-in-out infinite; }
+  .date-pill { padding: 8px 12px; border: 1px solid var(--color-border); text-align: center; background: var(--color-pill-bg); position: relative; transition: background-color 0.2s ease, border-color 0.2s ease; }
+  .date-pill.upcoming { border-color: var(--color-text); background: var(--color-card-bg); }
+  .date-pill.tonight { border-color: var(--orange); background: var(--color-tonight-bg); animation: tonight-breath 2.6s ease-in-out infinite; }
   @keyframes tonight-breath { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,153,0,0); } 50% { box-shadow: 0 0 0 4px rgba(255,153,0,0.18); } }
   @media (prefers-reduced-motion: reduce) { .date-pill.tonight { animation: none; box-shadow: 0 0 0 3px rgba(255,153,0,0.22); } .wordmark-sun { transition: none; } }
   a.date-pill { text-decoration: none; color: inherit; display: block; cursor: pointer; transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease; }
-  a.date-pill:hover { border-color: var(--orange); background: #fff8ee; transform: translateY(-1px); box-shadow: 0 2px 0 0 var(--orange); }
+  a.date-pill:hover { border-color: var(--orange); background: var(--color-tonight-bg); transform: translateY(-1px); box-shadow: 0 2px 0 0 var(--orange); }
   a.date-pill:hover .pill-cta { color: var(--orange); }
   a.date-pill:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
   .pill-date { font-size: 14px; font-weight: 600; font-family: var(--mono); }
-  .pill-days { font-size: 11px; color: #888; margin-top: 2px; font-family: var(--mono); }
+  .pill-days { font-size: 11px; color: var(--color-text-faint); margin-top: 2px; font-family: var(--mono); }
   .date-pill.upcoming .pill-days { color: var(--orange); }
-  .pill-countdown { font-size: 10px; color: #888; margin-top: 2px; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .pill-countdown { font-size: 10px; color: var(--color-text-faint); margin-top: 2px; font-family: var(--mono); font-variant-numeric: tabular-nums; }
   .date-pill.tonight .pill-countdown { color: var(--orange); font-weight: 600; }
-  .pill-cta { font-size: 8px; color: #bbb; margin-top: 3px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.15s ease, opacity 0.15s ease, margin-top 0.15s ease; }
+  .pill-cta { font-size: 8px; color: var(--color-text-fainter); margin-top: 3px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.15s ease, opacity 0.15s ease, margin-top 0.15s ease; }
   a.date-pill:hover .pill-cta, a.date-pill:focus-visible .pill-cta { max-height: 14px; opacity: 1; }
   a.date-pill.tonight .pill-cta { max-height: 14px; opacity: 1; color: var(--orange); }
-  .expand-row { font-size: 11px; color: #aaa; cursor: pointer; padding-top: 6px; font-family: var(--mono); }
-  .expand-row:hover { color: #111; }
-  .details { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0; display: none; }
+  .expand-row { font-size: 11px; color: var(--color-text-dim); cursor: pointer; padding-top: 6px; font-family: var(--mono); }
+  .expand-row:hover { color: var(--color-text); }
+  .details { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-border); display: none; }
   .card.expanded .details { display: block; }
   .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-  .stat-label { font-size: 10px; color: #888; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-label { font-size: 10px; color: var(--color-text-faint); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
   .stat-val { font-size: 13px; font-weight: 600; margin-top: 2px; font-family: var(--mono); }
-  .math-block { font-family: var(--mono); font-size: 11px; color: #444; background: #f7f7f7; padding: 10px 12px; line-height: 2; margin-bottom: 6px; border-left: 2px solid var(--orange); }
-  .math-block span { color: #111; font-weight: 600; }
-  .note-text { font-size: 12px; color: #888; line-height: 1.6; }
-  .site-footer { text-align: center; padding: 2rem 0 1.5rem; font-size: 12px; color: #888; font-family: var(--mono); }
+  .math-block { font-family: var(--mono); font-size: 11px; color: var(--color-text-soft); background: var(--color-math-bg); padding: 10px 12px; line-height: 2; margin-bottom: 6px; border-left: 2px solid var(--orange); transition: background-color 0.2s ease, color 0.2s ease; }
+  .math-block span { color: var(--color-text); font-weight: 600; }
+  .note-text { font-size: 12px; color: var(--color-text-faint); line-height: 1.6; }
+  .site-footer { text-align: center; padding: 2rem 0 1.5rem; font-size: 12px; color: var(--color-text-faint); font-family: var(--mono); }
   .site-footer a { color: inherit; }
-  .footer-next { font-size: 11px; color: #aaa; margin-bottom: 14px; font-family: var(--mono); letter-spacing: 0.02em; }
-  .footer-next .next-city { color: #111; cursor: pointer; text-decoration: underline; text-decoration-color: rgba(255,153,0,0.35); text-underline-offset: 3px; }
+  .footer-next { font-size: 11px; color: var(--color-text-dim); margin-bottom: 14px; font-family: var(--mono); letter-spacing: 0.02em; }
+  .footer-next .next-city { color: var(--color-text); cursor: pointer; text-decoration: underline; text-decoration-color: rgba(255,153,0,0.35); text-underline-offset: 3px; }
   .footer-next .next-city:hover { color: var(--orange); text-decoration-color: var(--orange); }
   .card.flash { animation: card-flash 1.6s ease-out 1; }
   @keyframes card-flash { 0% { box-shadow: 0 0 0 0 rgba(255,153,0,0); } 25% { box-shadow: 0 0 0 4px rgba(255,153,0,0.45); } 100% { box-shadow: 0 0 0 0 rgba(255,153,0,0); } }
 </style>
+<script>
+  (function(){
+    try {
+      var t = localStorage.getItem('city-henge-theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch(e) {}
+  })();
+</script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2226%22%20fill%3D%22white%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23f90%22%20stroke-width%3D%221.5%22%3E%3Cline%20x1%3D%2245.0%22%20y1%3D%2232.0%22%20x2%3D%2254.0%22%20y2%3D%2232.0%22/%3E%3Cline%20x1%3D%2244.0%22%20y1%3D%2237.0%22%20x2%3D%2252.3%22%20y2%3D%2240.4%22/%3E%3Cline%20x1%3D%2241.2%22%20y1%3D%2241.2%22%20x2%3D%2247.6%22%20y2%3D%2247.6%22/%3E%3Cline%20x1%3D%2237.0%22%20y1%3D%2244.0%22%20x2%3D%2240.4%22%20y2%3D%2252.3%22/%3E%3Cline%20x1%3D%2232.0%22%20y1%3D%2245.0%22%20x2%3D%2232.0%22%20y2%3D%2254.0%22/%3E%3Cline%20x1%3D%2227.0%22%20y1%3D%2244.0%22%20x2%3D%2223.6%22%20y2%3D%2252.3%22/%3E%3Cline%20x1%3D%2222.8%22%20y1%3D%2241.2%22%20x2%3D%2216.4%22%20y2%3D%2247.6%22/%3E%3Cline%20x1%3D%2220.0%22%20y1%3D%2237.0%22%20x2%3D%2211.7%22%20y2%3D%2240.4%22/%3E%3Cline%20x1%3D%2219.0%22%20y1%3D%2232.0%22%20x2%3D%2210.0%22%20y2%3D%2232.0%22/%3E%3Cline%20x1%3D%2220.0%22%20y1%3D%2227.0%22%20x2%3D%2211.7%22%20y2%3D%2223.6%22/%3E%3Cline%20x1%3D%2222.8%22%20y1%3D%2222.8%22%20x2%3D%2216.4%22%20y2%3D%2216.4%22/%3E%3Cline%20x1%3D%2227.0%22%20y1%3D%2220.0%22%20x2%3D%2223.6%22%20y2%3D%2211.7%22/%3E%3Cline%20x1%3D%2232.0%22%20y1%3D%2219.0%22%20x2%3D%2232.0%22%20y2%3D%2210.0%22/%3E%3Cline%20x1%3D%2237.0%22%20y1%3D%2220.0%22%20x2%3D%2240.4%22%20y2%3D%2211.7%22/%3E%3Cline%20x1%3D%2241.2%22%20y1%3D%2222.8%22%20x2%3D%2247.6%22%20y2%3D%2216.4%22/%3E%3Cline%20x1%3D%2244.0%22%20y1%3D%2227.0%22%20x2%3D%2252.3%22%20y2%3D%2223.6%22/%3E%3C/g%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2211%22%20fill%3D%22%23f90%22/%3E%3C/svg%3E">
 <link rel='preconnect' href='https://fonts.googleapis.com'>
 <link href='https://fonts.googleapis.com/css2?family=Nunito:wght@700&family=Boogaloo&family=Boldonse&display=swap' rel='stylesheet'>
@@ -88,7 +169,8 @@
 <body>
 <div class="page">
   <div class="header">
-    <h1><span id="wordmark-prefix">CITY</span><svg id="wordmark-sun" class="wordmark-sun" width="50" height="26" viewBox="0 0 50 26" role="button" tabindex="0" aria-label="Sun. Click to align with the next henge." xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="26" r="26" fill="white"/><g fill="none" stroke="#f90" stroke-width="1.5"><line x1="38.00" y1="26.00" x2="47.00" y2="26.00"/><line x1="37.01" y1="30.97" x2="45.33" y2="34.42"/><line x1="34.19" y1="35.19" x2="40.56" y2="41.56"/><line x1="29.97" y1="38.01" x2="33.42" y2="46.33"/><line x1="25.00" y1="39.00" x2="25.00" y2="48.00"/><line x1="20.03" y1="38.01" x2="16.58" y2="46.33"/><line x1="15.81" y1="35.19" x2="9.44" y2="41.56"/><line x1="12.99" y1="30.97" x2="4.67" y2="34.42"/><line x1="12.00" y1="26.00" x2="3.00" y2="26.00"/><line x1="12.99" y1="21.03" x2="4.67" y2="17.58"/><line x1="15.81" y1="16.81" x2="9.44" y2="10.44"/><line x1="20.03" y1="13.99" x2="16.58" y2="5.67"/><line x1="25.00" y1="13.00" x2="25.00" y2="4.00"/><line x1="29.97" y1="13.99" x2="33.42" y2="5.67"/><line x1="34.19" y1="16.81" x2="40.56" y2="10.44"/><line x1="37.01" y1="21.03" x2="45.33" y2="17.58"/></g><circle cx="25" cy="26" r="11" fill="#f90"/></svg><span>HENGE</span></h1>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false"></button>
+    <h1><span id="wordmark-prefix">CITY</span><svg id="wordmark-sun" class="wordmark-sun" width="50" height="26" viewBox="0 0 50 26" role="button" tabindex="0" aria-label="Sun. Click to align with the next henge." xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="26" r="26" class="wordmark-sun-halo"/><g fill="none" stroke="#f90" stroke-width="1.5"><line x1="38.00" y1="26.00" x2="47.00" y2="26.00"/><line x1="37.01" y1="30.97" x2="45.33" y2="34.42"/><line x1="34.19" y1="35.19" x2="40.56" y2="41.56"/><line x1="29.97" y1="38.01" x2="33.42" y2="46.33"/><line x1="25.00" y1="39.00" x2="25.00" y2="48.00"/><line x1="20.03" y1="38.01" x2="16.58" y2="46.33"/><line x1="15.81" y1="35.19" x2="9.44" y2="41.56"/><line x1="12.99" y1="30.97" x2="4.67" y2="34.42"/><line x1="12.00" y1="26.00" x2="3.00" y2="26.00"/><line x1="12.99" y1="21.03" x2="4.67" y2="17.58"/><line x1="15.81" y1="16.81" x2="9.44" y2="10.44"/><line x1="20.03" y1="13.99" x2="16.58" y2="5.67"/><line x1="25.00" y1="13.00" x2="25.00" y2="4.00"/><line x1="29.97" y1="13.99" x2="33.42" y2="5.67"/><line x1="34.19" y1="16.81" x2="40.56" y2="10.44"/><line x1="37.01" y1="21.03" x2="45.33" y2="17.58"/></g><circle cx="25" cy="26" r="11" fill="#f90"/></svg><span>HENGE</span></h1>
     <p>When the <a href="https://en.wikipedia.org/wiki/Manhattanhenge" style="color:inherit">sun lines up</a> <span id="tagline-tail">with city street grids around the world</span></p>
     <div id="tonight-line" class="tonight-line" aria-live="polite"></div>
   </div>
@@ -248,29 +330,29 @@ function drawGrid(offset, dir, w, h){
   for(let i=-30;i<=30;i++){
     const ox = sunX + i*spacing*perpCos;
     const oy = sunY + i*spacing*perpSin;
-    lines.push(`<line x1="${ox-ext*cos}" y1="${oy-ext*sin}" x2="${ox+ext*cos}" y2="${oy+ext*sin}" stroke="#ddd" stroke-width="1"/>`);
+    lines.push(`<line x1="${ox-ext*cos}" y1="${oy-ext*sin}" x2="${ox+ext*cos}" y2="${oy+ext*sin}" class="grid-line" stroke-width="1"/>`);
   }
   // Draw perpendicular lines (cross streets) at spacing intervals along the sun line
   for(let i=-30;i<=30;i++){
     const ox = sunX + i*spacing*cos;
     const oy = sunY + i*spacing*sin;
-    lines.push(`<line x1="${ox-ext*perpCos}" y1="${oy-ext*perpSin}" x2="${ox+ext*perpCos}" y2="${oy+ext*perpSin}" stroke="#ddd" stroke-width="1"/>`);
+    lines.push(`<line x1="${ox-ext*perpCos}" y1="${oy-ext*perpSin}" x2="${ox+ext*perpCos}" y2="${oy+ext*perpSin}" class="grid-line" stroke-width="1"/>`);
   }
   const ex = sunX + ext*cos, ey = sunY + ext*sin;
   const r=10, sr=19, spokes=16;
   let sunEl='<g>';
-  sunEl+=`<circle cx="${sunX}" cy="${sunY}" r="${sr+4}" fill="#fafafa" stroke="none"/>`;
+  sunEl+=`<circle cx="${sunX}" cy="${sunY}" r="${sr+4}" class="grid-sun-halo" stroke="none"/>`;
   sunEl+='<g fill="none" stroke="#f90" stroke-width="1.5">';
   for(let i=0;i<spokes;i++){
     const a=(i/spokes)*Math.PI*2 + rad;
     sunEl+=`<line x1="${sunX+Math.cos(a)*(r+2)}" y1="${sunY+Math.sin(a)*(r+2)}" x2="${sunX+Math.cos(a)*sr}" y2="${sunY+Math.sin(a)*sr}"/>`;
   }
   sunEl+=`</g><circle cx="${sunX}" cy="${sunY}" r="${r}" fill="#f90" stroke="none"/></g>`;
-  return `<svg width="100%" height="${h}" style="display:block;background:#fafafa">`
+  return `<svg width="100%" height="${h}" class="grid-svg" style="display:block">`
     +`<defs><clipPath id="${uid}"><rect width="100%" height="${h}"/></clipPath></defs>`
-    +`<rect width="100%" height="${h}" fill="#fafafa"/>`
+    +`<rect width="100%" height="${h}" class="grid-bg"/>`
     +`<g clip-path="url(#${uid})">${lines.join('')}</g>`
-    +`<line x1="${sunX-ext*cos}" y1="${sunY-ext*sin}" x2="${ex}" y2="${ey}" stroke="#999" stroke-width="2.5" stroke-dasharray="6,4"/>`
+    +`<line x1="${sunX-ext*cos}" y1="${sunY-ext*sin}" x2="${ex}" y2="${ey}" class="grid-horizon" stroke-width="2.5" stroke-dasharray="6,4"/>`
     +sunEl
     +'</svg>';
 }
@@ -367,13 +449,13 @@ function renderCards(){
           <div class="right-col">
             <div style="text-align:right">
               <span class="offset-badge">${city.offset===0?'':(city.hem==='S'?(city.offsetDir==='CW'?'-':'+'):(city.offsetDir==='CW'?'+':'-'))}${city.offset}&deg;</span>
-              <div style="font-size:10px;color:#888;font-family:var(--mono);margin-top:2px;text-transform:uppercase;letter-spacing:0.06em">grid offset</div>
+              <div style="font-size:10px;color:var(--color-text-faint);font-family:var(--mono);margin-top:2px;text-transform:uppercase;letter-spacing:0.06em">grid offset</div>
             </div>
           </div>
         </div>
         <div class="dates-section">
           <div class="dates-label">${THIS_YEAR} sunset henge dates</div>
-          <div class="date-pills">${pillsHtml||'<span style="font-size:13px;color:var(--color-text-tertiary)">None calculated</span>'}</div>
+          <div class="date-pills">${pillsHtml||'<span style="font-size:13px;color:var(--color-text-faint)">None calculated</span>'}</div>
         </div>
         <div class="expand-row" onclick="toggle(this.closest('.card'))">Show angles + math ↓</div>
         <div class="details">
@@ -498,6 +580,39 @@ function updateLiveCountdowns(){
     el.textContent=fmtCountdown(ms);
   });
 }
+
+(function setupThemeToggle(){
+  const root = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  if(!btn) return;
+  const STORAGE_KEY = 'city-henge-theme';
+  const sunSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
+  const moonSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  function effectiveTheme(){
+    const override = root.getAttribute('data-theme');
+    if(override === 'dark' || override === 'light') return override;
+    return mq.matches ? 'dark' : 'light';
+  }
+  function syncIcon(){
+    const t = effectiveTheme();
+    btn.innerHTML = t === 'dark' ? sunSvg : moonSvg;
+    btn.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+    btn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+  }
+  btn.addEventListener('click', ()=>{
+    const next = effectiveTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem(STORAGE_KEY, next); } catch(e) {}
+    syncIcon();
+  });
+  if(typeof mq.addEventListener === 'function'){
+    mq.addEventListener('change', ()=>{
+      if(!root.getAttribute('data-theme')) syncIcon();
+    });
+  }
+  syncIcon();
+})();
 
 (function setupWordmarkSun(){
   const sun=document.getElementById('wordmark-sun');
