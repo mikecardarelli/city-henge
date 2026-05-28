@@ -91,7 +91,7 @@
   .theme-toggle:hover { border-color: var(--orange); color: var(--orange); }
   .theme-toggle:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
   .theme-toggle svg { width: 14px; height: 14px; display: block; }
-  .tonight-line { display: none; font-family: var(--mono); font-size: 13px; color: var(--color-text); margin: 14px 0 0; padding: 8px 12px; border: 1px solid var(--orange); background: var(--color-tonight-bg); transition: background-color 0.2s ease, color 0.2s ease; }
+  .tonight-line { display: none; font-family: var(--mono); font-size: 13px; color: var(--color-text); margin: 14px 0 14px; padding: 8px 12px; border: 1px solid var(--orange); background: var(--color-tonight-bg); transition: background-color 0.2s ease, color 0.2s ease; }
   .tonight-line.visible { display: block; }
   .tonight-line strong { color: var(--orange); font-weight: 700; letter-spacing: 0.04em; }
   .tonight-city { color: var(--color-text); cursor: pointer; text-decoration: underline; text-decoration-color: rgba(255,153,0,0.4); text-underline-offset: 3px; }
@@ -172,8 +172,8 @@
     <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false"></button>
     <h1><span id="wordmark-prefix">CITY</span><svg id="wordmark-sun" class="wordmark-sun" width="50" height="26" viewBox="0 0 50 26" role="button" tabindex="0" aria-label="Sun. Click to align with the next henge." xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="26" r="26" class="wordmark-sun-halo"/><g fill="none" stroke="#f90" stroke-width="1.5"><line x1="38.00" y1="26.00" x2="47.00" y2="26.00"/><line x1="37.01" y1="30.97" x2="45.33" y2="34.42"/><line x1="34.19" y1="35.19" x2="40.56" y2="41.56"/><line x1="29.97" y1="38.01" x2="33.42" y2="46.33"/><line x1="25.00" y1="39.00" x2="25.00" y2="48.00"/><line x1="20.03" y1="38.01" x2="16.58" y2="46.33"/><line x1="15.81" y1="35.19" x2="9.44" y2="41.56"/><line x1="12.99" y1="30.97" x2="4.67" y2="34.42"/><line x1="12.00" y1="26.00" x2="3.00" y2="26.00"/><line x1="12.99" y1="21.03" x2="4.67" y2="17.58"/><line x1="15.81" y1="16.81" x2="9.44" y2="10.44"/><line x1="20.03" y1="13.99" x2="16.58" y2="5.67"/><line x1="25.00" y1="13.00" x2="25.00" y2="4.00"/><line x1="29.97" y1="13.99" x2="33.42" y2="5.67"/><line x1="34.19" y1="16.81" x2="40.56" y2="10.44"/><line x1="37.01" y1="21.03" x2="45.33" y2="17.58"/></g><circle cx="25" cy="26" r="11" fill="#f90"/></svg><span>HENGE</span></h1>
     <p>When the <a href="https://en.wikipedia.org/wiki/Manhattanhenge" style="color:inherit">sun lines up</a> <span id="tagline-tail">with city street grids around the world</span></p>
-    <div id="tonight-line" class="tonight-line" aria-live="polite"></div>
   </div>
+  <div id="tonight-line" class="tonight-line" aria-live="polite"></div>
   <div class="filters">
     <button class="filter-btn active" onclick="setFilter('all',this)">All cities</button>
     <button class="filter-btn" onclick="setFilter('north',this)">Northern hemisphere</button>
